@@ -1,0 +1,3 @@
+File 3: Day 3 - Nâng cao & Chất lượng (Trọng tâm: AOP, Redis & Testing)Prompt cho AI:"Bạn là Senior Java Spring Architect. Hãy nâng cấp dự án Rikkei Bank lên chuẩn Enterprise cho Day 3:AOP Logging (FR-11): Tạo @LogAudit annotation. Sử dụng @Aspect để ghi log các giao dịch tài chính (Input/Output/Error) trước khi commit và sau khi rollback. Tuyệt đối không log thông tin nhạy cảm (PIN/Password).
+2. Redis (FR-13): Thay thế việc lưu Token Blacklist từ Database sang Redis để tăng hiệu năng.
+3. Unit Test (FR-12): Viết 5 Unit Test cho Service (Mocking Repository) và 5 Unit Test cho Controller bằng JUnit 5 + Mockito.  Yêu cầu: Code tuân thủ SOLID. Giải thích tại sao dùng Redis lại tốt hơn DB trong trường hợp này."

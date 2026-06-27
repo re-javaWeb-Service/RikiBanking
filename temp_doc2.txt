@@ -1,0 +1,143 @@
+TÀI LIỆU ĐẶC TẢ YÊU CẦU HỆ THỐNG
+ĐỀ TÀI: HỆ THỐNG QUẢN LÝ NGÂN HÀNG RIKKEI BANK (JAVA WEB SERVICE CUNG CẤP RESTful API)
+I. Introduction (Giới thiệu)
+Purpose (Mục đích)
+Tài liệu Đặc tả Yêu cầu Hệ thống (SRS) này được biên soạn nhằm cung cấp một cái nhìn toàn diện và chi tiết nhất về dự án "Hệ thống Quản lý Ngân hàng Rikkei Bank". Mục đích của tài liệu là:
+Đối với sinh viên (Nhóm phát triển): Cung cấp "bản vẽ kỹ thuật" định hướng rõ ràng về các tính năng Core Banking cần lập trình, các ràng buộc kỹ thuật bắt buộc phải tuân thủ (RESTful, AOP, Spring Security) để tránh đi lạc đề hoặc thiết kế sai kiến trúc luồng tiền.
+Đối với giảng viên (Người đánh giá): Cung cấp bộ khung tiêu chuẩn để đối chiếu và chấm điểm dựa trên thang điểm 100 (60 điểm cho phần quản trị cơ bản và 40 điểm cho phần nghiệp vụ tài chính nâng cao).
+Application Overview (Tổng quan hệ thống)
+Hệ thống này được xây dựng dưới dạng ứng dụng Backend không trạng thái (Stateless Backend) cung cấp các RESTful API. Các ứng dụng phía Client (như Web ReactJS/VueJS hoặc Mobile App) sẽ tiêu thụ (consume) các API này để vận hành nghiệp vụ của một ngân hàng số.
+Hệ thống đảm bảo các trụ cột chính:
+Quản lý người dùng & Phân quyền: Xác thực chặt chẽ qua Spring Security, JWT và cơ chế kiểm soát rủi ro truy cập (Role-Based Access Control)
+Nghiệp vụ cốt lõi: Số hóa quy trình mở tài khoản (eKYC), vấn tin số dư, chuyển tiền nội bộ/liên ngân hàng và sao kê giao dịch.
+Giám sát hệ thống (Logging): Ứng dụng kỹ thuật AOP để tách biệt hoàn toàn code ghi nhật ký kiểm toán (Audit Log) ra khỏi code xử lý giao dịch chính, giúp mã nguồn sạch và dễ bảo trì.
+Intended Audience and Reading Suggestions (Đối tượng và Hướng dẫn đọc)
+Backend Developer (Sinh viên): Cần đọc kỹ toàn bộ tài liệu, đặc biệt chú ý phần Use Case Specification để thiết kế Database (chú ý tính ACID của Transaction) và xây dựng các Endpoint an toàn.
+Giảng viên/Người đánh giá: Có thể tập trung vào phần Security Requirement, xử lý Transaction và Integration để đánh giá mức độ hoàn thành các tiêu chí nâng cao của dự án.
+
+Abbreviations (Thuật ngữ và viết tắt)
+API (Application Programming Interface): Phương thức giao tiếp giữa các phần mềm.
+RESTful API: Chuẩn thiết kế API sử dụng các phương thức HTTP (GET, POST, PUT, DELETE) thao tác lên các Resource.
+JWT (JSON Web Token): Tiêu chuẩn mã hóa chuỗi an toàn dùng để trao đổi thông tin người dùng.
+AOP (Aspect-Oriented Programming): Lập trình hướng khía cạnh, giúp bắt các sự kiện để xử lý logic phụ (Logging kiểm toán) mà không can thiệp vào logic chuyển tiền.
+eKYC (Electronic Know Your Customer): Định danh khách hàng điện tử.
+DTO (Data Transfer Object): Đối tượng dùng để truyền tải dữ liệu, giấu đi Entity thực sự của Database.
+
+References (Tài liệu tham khảo)
+Tài liệu chuẩn hóa REST API: REST API Design Rulebook.
+Tài liệu chính thức của Spring Boot Framework & Spring Data JPA.
+Tài liệu kiến trúc bảo mật Spring Security & luồng xác thực JWT.
+II. Functional Requirements
+Dưới đây là danh sách tổng quát các chức năng hệ thống cần có:
+
+III. Non-Functional Requirements
+Performance (Hiệu năng): Thời gian phản hồi API trung bình <= 3 giây. Riêng API xử lý giao dịch chuyển tiền phải hoàn tất dưới 5 giây. Giới hạn upload file hồ sơ là 5MB/file.
+Security (Bảo mật): Mật khẩu và mã PIN giao dịch tuyệt đối không lưu Plain Text, mã hóa bằng BCrypt strength 10+. Chuỗi JWT ký bằng Secret Key 256-bit. Các giao dịch tài chính phải có cơ chế chống Double-spending (chi tiêu kép).
+Availability (Tính sẵn sàng): API uptime mục tiêu đạt 99.9%.
+Scalability (Khả năng mở rộng): Thiết kế chuẩn Stateless để sẵn sàng Scale Horizontal.
+Maintainability (Khả năng bảo trì):
+Logging: Bắt buộc ghi log mọi truy vấn thay đổi số dư (Credit/Debit) qua AOP.
+IV. High Level Requirements
+
+Object Relationship Diagram (Mô hình quan hệ đối tượng)
+
+Workflow Diagram (Luồng công việc chính)
+
+State Transition Diagram (Biểu đồ vòng đời trạng thái)
+Mô tả sự chuyển đổi trạng thái của thực thể KycProfile (Hồ sơ định danh cá nhân): 
+-  Khi tạo mới hồ sơ thì mặc định status là PENDING , sau khi xác thực thì nếu đúng chuyển status thành CONFIRM và chuyển trang thái isKyc của User thành true còn nếu không đúng thì đổi status thành REJECT.
+
+Use Case Diagram (Biểu đồ Use Case tổng quan)
+Phân định ranh giới quyền hạn của 3 Actor: Admin (Quản trị hệ thống), Staff (Giao dịch viên), và Customer (Khách hàng).
+
+V. Security Requirements
+Cấu hình Stateless Session và sử dụng cơ chế bảo mật ba tầng Token:
+Cơ chế hoạt động của Token (JWT)
+AccessToken: Token tuổi thọ ngắn (3-5 phút). Gửi kèm trong Header để nhận diện.
+RefreshToken: Token tuổi thọ dài (1 ngày). Xin cấp lại AccessToken tại /api/auth/refresh.
+RevokedToken (Blacklist): Khi Logout, AccessToken hiện tại lưu vào TokenBlacklist. Bộ lọc kiểm tra nếu nằm trong Blacklist -> Trả về 401 Unauthorized.
+Ma trận phân quyền API (Authorization Matrix)
+	
+(Ngoài mấy đường dẫn trên thì đều có thể truy cập công khai)
+VI. Use Case Specification
+Toàn bộ dự án triển khai kiến trúc Monolithic, giao tiếp nội bộ qua Service Class, ngoại trừ tích hợp Cloud Storage.
+Khối bắt buộc: Quản trị & Nền tảng
+UC-01: Đăng nhập & Khởi tạo Token (JWT)
+Tác nhân: Admin, Staff, Customer
+Mô tả: Khách hàng cung cấp thông tin. Hệ thống xác thực bằng Spring Security và trả về chuỗi JWT.
+Luồng chính: 1. POST JSON (username, password) tới /api/auth/login.
+AuthenticationManager đối chiếu DB.
+Trả về HTTP 200 OK cùng AccessToken và RefreshToken.
+Luồng ngoại lệ: Sai thông tin -> BadCredentialsException -> HTTP 401. Tài khoản bị khóa -> HTTP 403.
+
+UC-02: Quản trị danh mục Khách hàng
+Tác nhân: Admin, Staff
+Mô tả: Thao tác CRUD lên danh sách khách hàng. Bắt buộc sử dụng kỹ thuật JPQL Constructor Projection để yêu cầu Database chỉ truy vấn đúng các trường dữ liệu cần thiết, tuyệt đối không tải toàn bộ thực thể (Entity) lên bộ nhớ RAM nhằm tối ưu hóa hiệu năng hệ thống.
+Luồng chính: 
+ Admin hoặc Staff gọi GET/PUT tới /api/v1/users.
+ Spring Security Filter xác nhận Role hợp lệ.
+ Controller gọi Service.
+ Tầng Repository thực thi câu lệnh JPQL sử dụng từ khóa new kết hợp đường dẫn Class DTO để ánh xạ trực tiếp dữ liệu từ các cột của bảng CSDL.
+Trả về đối tượng Page<UserResponseDto> gọn nhẹ với mã HTTP 200 OK .
+Luồng ngoại lệ: Sai quyền -> HTTP 403. Lỗi Validation -> HTTP 400.
+
+UC-03: Đăng xuất & Thu hồi Token
+Tác nhân: Admin, Staff, Customer
+Mô tả: Đưa AccessToken vào Blacklist.
+Luồng chính: POST tới /api/auth/logout. Lưu JWT vào Database. Trả về HTTP 200 OK.
+Khối nâng cao: Nghiệp vụ & Tích hợp
+
+UC-04: Chuyển tiền & Ghi nhật ký kiểm toán (AOP)
+Tác nhân: Customer
+Mô tả: Khách hàng thực hiện chuyển tiền. Hành động này được log lại bằng AOP độc lập với logic trừ tiền. Đòi hỏi cấu hình @Transactional bắt buộc ở Service.
+Luồng chính: 1. Client gửi JSON (targetAccountId, amount) tới /api/transactions/transfer.
+Service trừ tiền tài khoản nguồn, cộng tiền tài khoản đích và tạo bản ghi Transaction.
+Kích hoạt AOP (@AfterReturning), trích xuất thông tin ghi dòng log: [AUDIT] Account A transferred Amount to Account B.
+Controller trả về HTTP 200 OK.
+Luồng ngoại lệ: Không đủ số dư -> Quăng InsufficientBalanceException -> HTTP 409 Conflict. AOP bắt lỗi qua @AfterThrowing ghi log giao dịch thất bại.
+
+UC-05: Định danh điện tử (eKYC) & Tích hợp lưu trữ đám mây 
+Tác nhân: Customer
+Mô tả: Tải lên hình ảnh CCCD/Passport (MultipartFile). Hệ thống đẩy lên Cloudinary/AWS S3 qua SDK, lưu URL vào CSDL.
+Luồng chính: 1. POST multipart/form-data chứa file vật lý tới /api/v1/kyc/upload.
+Service gọi hàm upload của nền tảng đám mây.
+Nhận về Secure URL, cập nhật vào bảng KycProfile và chuyển trạng thái status là PENDING .
+Trả về HTTP 200 OK kèm DTO.
+Luồng ngoại lệ: Sai định dạng file -> HTTP 400. Lỗi kết nối đám mây -> HTTP 503 hoặc 500.
+
+UC-06: Xem sao kê lịch sử giao dịch
+Tác nhân: Customer
+Mô tả: Khách hàng thực hiện truy vấn danh sách các giao dịch biến động số dư (gồm cả chuyển đi và nhận về) của một tài khoản cụ thể theo thời gian. Hệ thống bắt buộc phải truy vấn dựa trên cả hai trường khóa ngoại (from_account_id và to_account_id) để trả về kết quả đồng bộ và chính xác nhất.
+Luồng chính: 
+Customer gọi GET tới api lấy về danh sách lịch sử giao dịch kèm tham số phân trang. 
+Spring Security Filter kiểm tra tính hợp lệ của AccessToken và xác nhận quyền sở hữu tài khoản của Customer đó. 
+Controller tiếp nhận mã số tài khoản (accountId) và gọi xuống tầng Service. 
+Tầng Repository thực thi câu lệnh SQL/JPQL sử dụng phép toán OR để quét tất cả bản ghi có tài khoản này tham gia với tư cách là bên gửi hoặc bên nhận. 
+Tầng Service ánh xạ dữ liệu sang DTO và tự động tính toán thuộc tính loại giao dịch (Nếu accountId trùng với from_account_id thì đánh dấu là "Giao dịch trừ tiền - DEBIT", nếu trùng với to_account_id thì đánh dấu là "Giao dịch cộng tiền - CREDIT"). 
+Trả về danh sách sao kê có phân trang xếp theo thứ tự thời gian mới nhất với mã HTTP 200 OK.
+VII. Technical Conventions & Rules
+API Naming & Versioning Convention
+Versioning: Tiền tố version /api/v1/
+Resource Naming: Danh từ số nhiều. Ví dụ: /api/v1/accounts, /api/v1/transactions
+HTTP Status Code Standard
+200 OK: Truy vấn/Cập nhật thành công.
+201 Created: Tạo mới thành công.
+204 No Content: Xóa thành công.
+400 Bad Request: Validation thất bại.
+401 Unauthorized: Thiếu/Sai Token.
+403 Forbidden: Không đủ quyền truy cập.
+409 Conflict: Xung đột nghiệp vụ (VD: Số dư không đủ để chuyển khoản).
+500 Internal Server Error: Lỗi hệ thống bất ngờ.
+Standard Response Format
+Mẫu thành công:
+
+Mẫu báo lỗi (Error Handling):
+
+
+ 
+ 
+
+
+
+{   "success": true,   "message": "Created successfully",   "data": { ... } }
+{   "timestamp": "2026-05-26T14:03:04",   "status": 400,   "error": "Bad Request",   "message": "Email invalid format",   "path": "/api/v1/users" }

@@ -14,6 +14,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 
 import java.io.IOException;
 //JwtAuthenticationFilter = kiểm tra token cho request
@@ -51,28 +53,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 //        Điểm quan trọng là: nó không cho phép request, mà là cho request đi tiếp trong trạng thái chưa đăng nhập.
 
         if(tokenBlackListRepository.existsByAccessToken(token)){
-            filterChain.doFilter(request,response);
+            SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\":\"Access token has been revoked\"}");
             return;
         }
-        String username = service.extractUsername(token);
+        try{
+            String username = service.extractUsername(token);
 
-        if(username != null && SecurityContextHolder.getContext().getAuthentication()== null){
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if(service.isTokenValid(token,userDetails)){
-                UsernamePasswordAuthenticationToken authenticationToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-                authenticationToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
+            if(username != null && SecurityContextHolder.getContext().getAuthentication()== null){
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                if(service.isTokenValid(token,userDetails)){
+                    UsernamePasswordAuthenticationToken authenticationToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+                    authenticationToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
 
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                }
             }
+            filterChain.doFilter(request, response);
+        }catch (ExpiredJwtException exception){
+            SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\":\"Access token has expired\"}");
+        }catch (JwtException | IllegalArgumentException exception){
+            SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\":\"Invalid access token\"}");
         }
-        filterChain.doFilter(request, response);
 
     }
 }

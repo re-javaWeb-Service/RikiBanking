@@ -1,6 +1,8 @@
 package com.re.rikkeibanking.controller;
 
 import com.re.rikkeibanking.dto.request.LoginRequest;
+import com.re.rikkeibanking.dto.request.LogoutRequest;
+import com.re.rikkeibanking.dto.request.RefreshTokenRequest;
 import com.re.rikkeibanking.dto.response.LoginResponse;
 import com.re.rikkeibanking.service.AuthService;
 import jakarta.validation.Valid;
@@ -20,8 +22,14 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public String logout(@RequestHeader("Authorization") String authorizationHeader) {
-        service.logOut(authorizationHeader);
+    public String logout(@RequestHeader("Authorization") String authorizationHeader,
+                         @Valid @RequestBody LogoutRequest request) {
+        service.logOut(authorizationHeader,request.getRefreshToken());
         return "Logout successful";
+    }
+
+    @PostMapping("/refresh")
+    public LoginResponse refresh(@Valid @RequestBody RefreshTokenRequest request){
+        return service.refreshToken(request.getRefreshToken());
     }
 }

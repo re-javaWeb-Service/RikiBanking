@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @RequiredArgsConstructor
@@ -30,9 +31,18 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+                //Spring Security không lưu user login trong HTTP session nữa.
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
-                        .requestMatchers("/api/auth/**").permitAll()
+//                        /api/auth/login   -> public, vì chưa đăng nhập vẫn phải login được
+                        .requestMatchers("/api/auth/login","/api/auth/refresh").permitAll()
+//                        /api/auth/refresh -> public, vì accessToken có thể hết hạn, dùng refreshToken lấy token mới
+                        .requestMatchers("/api/auth/logout").authenticated()
+                                .requestMatchers("/api/v1/users/**").hasAnyAuthority("ROLE_ADMIN","ROLE_STAFF")
+                                .requestMatchers("/api/v1/kyc/upload").hasAuthority("ROLE_CUSTOMER")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/accounts/**").hasAnyAuthority("ROLE_ADMIN","ROLE_STAFF", "ROLE_CUSTOMER")
+                                .requestMatchers(HttpMethod.POST, "/api/v1/accounts").hasAnyAuthority("ROLE_ADMIN","ROLE_STAFF")
+                                .requestMatchers(HttpMethod.PATCH, "/api/v1/accounts/**").hasAnyAuthority("ROLE_ADMIN","ROLE_STAFF")
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()

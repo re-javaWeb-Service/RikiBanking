@@ -42,8 +42,12 @@ public class KycProfile {
     @Column(length = 255)
     private String address;
 
+    //link url anh cccd truoc
     @Column(length = 500)
     private String idCardFrontUrl;
+    //link url anh cccd sau
+    @Column(length = 500)
+    private String idCardBackUrl;
 
     @Column(nullable = false, length = 20)
     private String status = "PENDING";

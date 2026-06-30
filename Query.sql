@@ -5,3 +5,5 @@ FROM users
 WHERE username = 'admin';
 
 SHOW TABLES;
+
+SELECT * from rikkei_banking.token_black_list;

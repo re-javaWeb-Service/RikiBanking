@@ -14,58 +14,58 @@ Hoan thien cac use case quan tri va nghiep vu co ban trong SRS: quan ly khach ha
 ## Cac nhiem vu
 
 ### RB-07: User & Customer Management
-- [ ] Tao `UserResponseDto`:
+- [x] Tao `UserResponseDto`:
   - id, username, email, phoneNumber, isActive, isKyc, role, createdAt.
   - Khong tra password hoac thong tin nhay cam.
-- [ ] Tao DTO request cap nhat user:
+- [x] Tao DTO request cap nhat user:
   - email.
   - phoneNumber.
   - isActive.
   - role neu ADMIN duoc phep cap nhat.
-- [ ] Bo sung JPQL Constructor Projection trong `UserRepository`:
+- [x] Bo sung JPQL Constructor Projection trong `UserRepository`:
   - Tra ve `Page<UserResponseDto>`.
   - Chi select cac cot can thiet, khong load full entity.
-- [ ] API lay danh sach khach hang:
+- [x] API lay danh sach khach hang:
   - `GET /api/v1/users`
   - Chi ADMIN/STAFF duoc truy cap.
   - Ho tro page, size, sort.
   - Tra ve `Page<UserResponseDto>`.
-- [ ] API xem chi tiet khach hang:
+- [x] API xem chi tiet khach hang:
   - `GET /api/v1/users/{id}`
   - Chi ADMIN/STAFF duoc truy cap.
-- [ ] API cap nhat thong tin khach hang:
+- [x] API cap nhat thong tin khach hang:
   - `PUT /api/v1/users/{id}`
   - Chi ADMIN/STAFF duoc truy cap.
   - Validate email, phoneNumber, role, status.
-- [ ] API khoa/mo khoa khach hang:
+- [x] API khoa/mo khoa khach hang:
   - `PATCH /api/v1/users/{id}/status`
   - Chi ADMIN duoc khoa/mo khoa.
-- [ ] Xu ly loi:
+- [x] Xu ly loi:
   - Khong tim thay user: HTTP 404.
   - Sai quyen: HTTP 403.
   - Validation fail: HTTP 400.
 
 ### RB-08: Account Management & Balance Inquiry
-- [ ] Tao `AccountResponseDto`:
+- [x] Tao `AccountResponseDto`:
   - id, accountNumber, currency, balance, active, createdAt.
   - Khong tra `transactionPin`.
-- [ ] Tao API lay danh sach tai khoan cua khach hang:
+- [x] Tao API lay danh sach tai khoan cua khach hang:
   - `GET /api/v1/accounts`
   - CUSTOMER chi xem tai khoan cua minh.
   - ADMIN/STAFF co the filter theo userId.
-- [ ] Tao API xem chi tiet tai khoan:
+- [x] Tao API xem chi tiet tai khoan:
   - `GET /api/v1/accounts/{id}`
   - Kiem tra quyen so huu tai khoan voi CUSTOMER.
-- [ ] Tao API van tin so du:
+- [x] Tao API van tin so du:
   - `GET /api/v1/accounts/{id}/balance`
   - Chi CUSTOMER so huu tai khoan hoac ADMIN/STAFF duoc xem.
   - Tra ve accountNumber, currency, balance.
-- [ ] Tao API tao tai khoan ngan hang cho khach hang da KYC:
+- [x] Tao API tao tai khoan ngan hang cho khach hang da KYC:
   - `POST /api/v1/accounts`
   - Chi STAFF/ADMIN duoc tao.
   - Chi tao khi user da `isKyc = true`.
   - Ma hoa transaction PIN bang BCrypt.
-- [ ] Tao API khoa/mo khoa tai khoan:
+- [x] Tao API khoa/mo khoa tai khoan:
   - `PATCH /api/v1/accounts/{id}/status`
   - Chi STAFF/ADMIN duoc thuc hien.
 
@@ -81,7 +81,7 @@ Hoan thien cac use case quan tri va nghiep vu co ban trong SRS: quan ly khach ha
   - Chi chap nhan jpg, jpeg, png, pdf neu SRS cho phep.
   - Upload len cloud storage.
   - Tra ve secure URL.
-- [ ] API upload eKYC:
+- [x] API upload eKYC:
   - `POST /api/v1/kyc/upload`
   - Request multipart/form-data.
   - File mat truoc CCCD/Passport.
@@ -89,35 +89,37 @@ Hoan thien cac use case quan tri va nghiep vu co ban trong SRS: quan ly khach ha
   - Luu URL vao `KycProfile`.
   - Cap nhat status thanh `PENDING`.
   - Tra HTTP 200 OK kem DTO.
-- [ ] Xu ly loi upload:
+- [x] Xu ly loi upload:
   - Sai dinh dang: HTTP 400.
   - Vuot 5MB: HTTP 400.
   - Loi cloud storage: HTTP 503 hoac 500.
 
+> Ghi chu hien tai: `FileStorageService` dang dung mock URL `mock://kyc/...` de hoan thien flow va validation. Cloudinary/AWS S3 that van chua duoc tich hop.
+
 ### RB-10: eKYC Approval Workflow
-- [ ] Tao `KycProfileResponseDto`:
+- [x] Tao `KycProfileResponseDto`:
   - id, userId, fullName, idNumber, file URLs, status, verifiedAt.
-- [ ] API lay danh sach ho so KYC cho STAFF:
+- [x] API lay danh sach ho so KYC cho STAFF:
   - `GET /api/v1/kyc`
   - Ho tro filter theo status: PENDING, CONFIRM, REJECT.
   - Ho tro phan trang.
-- [ ] API xem chi tiet ho so KYC:
+- [x] API xem chi tiet ho so KYC:
   - `GET /api/v1/kyc/{id}`
   - STAFF/ADMIN duoc truy cap.
-- [ ] API duyet ho so KYC:
+- [x] API duyet ho so KYC:
   - `PATCH /api/v1/kyc/{id}/approve`
   - Chi STAFF/ADMIN duoc thuc hien.
   - Chuyen status sang `CONFIRM`.
   - Cap nhat `User.isKyc = true`.
   - Set `verifiedAt`.
-- [ ] API tu choi ho so KYC:
+- [x] API tu choi ho so KYC:
   - `PATCH /api/v1/kyc/{id}/reject`
   - Chi STAFF/ADMIN duoc thuc hien.
   - Chuyen status sang `REJECT`.
   - Khong set `User.isKyc = true`.
 
 ### RB-11: Transaction Statement Query
-- [ ] Tao `TransactionStatementDto`:
+- [x] Tao `TransactionStatementDto`:
   - transactionId.
   - transactionCode.
   - accountNumber.
@@ -127,29 +129,29 @@ Hoan thien cac use case quan tri va nghiep vu co ban trong SRS: quan ly khach ha
   - description.
   - status.
   - createdAt.
-- [ ] Bo sung query trong `BankingTransactionRepository`:
+- [x] Bo sung query trong `BankingTransactionRepository`:
   - Tim transaction theo `fromAccount.id = accountId OR toAccount.id = accountId`.
   - Ho tro phan trang.
   - Sap xep moi nhat truoc.
-- [ ] API xem sao ke giao dich:
+- [x] API xem sao ke giao dich:
   - `GET /api/v1/accounts/{accountId}/transactions`
   - CUSTOMER chi xem tai khoan cua minh.
   - ADMIN/STAFF co the xem theo nghiep vu.
   - Service tu tinh DEBIT neu account la fromAccount.
   - Service tu tinh CREDIT neu account la toAccount.
-- [ ] Xu ly loi:
+- [x] Xu ly loi:
   - Account khong ton tai: HTTP 404.
   - CUSTOMER xem tai khoan khong phai cua minh: HTTP 403.
 
 ### RB-12: Authorization Matrix
-- [ ] Cau hinh phan quyen:
+- [x] Cau hinh phan quyen:
   - `/api/auth/**`: Public.
   - `/api/v1/admin/**`: ADMIN.
   - `/api/v1/users/**`: ADMIN, STAFF.
   - `/api/v1/kyc/**`: CUSTOMER upload, STAFF/ADMIN approve.
   - `/api/v1/accounts/**`: CUSTOMER/STAFF/ADMIN tuy endpoint.
   - `/api/v1/transactions/**`: CUSTOMER/STAFF/ADMIN tuy endpoint.
-- [ ] Them method-level security neu can:
+- [x] Them method-level security neu can:
   - `@PreAuthorize`.
   - Kiem tra ownership trong service.
 

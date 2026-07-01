@@ -71,4 +71,12 @@ public class UserServiceImpl implements UserService {
 
         return UserMapper.toResponseDto(user);
     }
+
+    @Override
+    public UserResponseDto getCurrentUserProfile(org.springframework.security.core.Authentication authentication) {
+        if (authentication.getPrincipal() instanceof com.re.rikkeibanking.security.UserPrincipal userPrincipal) {
+            return getUserById(userPrincipal.getId());
+        }
+        throw new BusinessException("Invalid authenticated user", HttpStatus.UNAUTHORIZED);
+    }
 }

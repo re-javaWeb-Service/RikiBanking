@@ -13,7 +13,7 @@ Thiet lap nen tang cho he thong Rikkei Bank RESTful API theo SRS: cau truc proje
 ## Cac nhiem vu
 
 ### RB-01: Project Foundation
-- [ ] Khoi tao project Spring Boot voi cac dependency:
+- [x] Khoi tao project Spring Boot voi cac dependency:
   - Spring Web MVC
   - Spring Data JPA
   - Spring Security
@@ -21,12 +21,12 @@ Thiet lap nen tang cho he thong Rikkei Bank RESTful API theo SRS: cau truc proje
   - Lombok
   - MySQL/H2
   - JWT
-- [ ] Thiet lap `application.properties`:
+- [x] Thiet lap `application.properties`:
   - Cau hinh datasource.
   - Cau hinh JPA/Hibernate.
   - Cau hinh JWT secret va expiration.
   - Cau hinh upload file limit 5MB.
-- [ ] Chia package theo layer:
+- [x] Chia package theo layer:
   - `controller`
   - `service`
   - `repository`
@@ -37,36 +37,36 @@ Thiet lap nen tang cho he thong Rikkei Bank RESTful API theo SRS: cau truc proje
   - `exception`
 
 ### RB-02: Database Core Entities
-- [ ] Tao entity `User`:
+- [x] Tao entity `User`:
   - username, password, email, phoneNumber.
   - isActive, isKyc.
   - createdAt.
   - lien ket Role, KycProfile, Account, RefreshToken, TokenBlacklist.
-- [ ] Tao entity `Role`:
+- [x] Tao entity `Role`:
   - ADMIN, STAFF, CUSTOMER.
-- [ ] Tao entity `RefreshToken`:
+- [x] Tao entity `RefreshToken`:
   - token, expiryDate, revoked, user.
-- [ ] Tao entity `TokenBlacklist`:
+- [x] Tao entity `TokenBlacklist`:
   - accessToken, expiryAt, blacklistedAt, user.
-- [ ] Tao entity `KycProfile`:
+- [x] Tao entity `KycProfile`:
   - idNumber, fullName, dob, sex, address.
   - idCardFrontUrl, idCardBackUrl.
   - status: PENDING, CONFIRM, REJECT.
   - verifiedAt, user.
-- [ ] Tao entity `Account`:
+- [x] Tao entity `Account`:
   - accountNumber, currency, balance.
   - transactionPin da ma hoa BCrypt.
   - active, version.
   - user.
-- [ ] Tao entity `BankingTransaction`:
+- [x] Tao entity `BankingTransaction`:
   - transactionCode, amount, description, status.
   - fromAccount, toAccount, createdAt.
-- [ ] Tao entity `AuditLog`:
+- [x] Tao entity `AuditLog`:
   - action, actor, status, message, createdAt.
   - dung cho AOP logging o Day 3.
 
 ### RB-03: Repository Layer
-- [ ] Tao repository cho cac entity chinh:
+- [x] Tao repository cho cac entity chinh:
   - `UserRepository`
   - `RoleRepository`
   - `RefreshTokenRepository`
@@ -75,52 +75,52 @@ Thiet lap nen tang cho he thong Rikkei Bank RESTful API theo SRS: cau truc proje
   - `BankingTransactionRepository`
   - `KycProfileRepository`
   - `AuditLogRepository`
-- [ ] Trong `UserRepository`, bo sung cac method:
+- [x] Trong `UserRepository`, bo sung cac method:
   - `findByUsername`
   - `findByEmail`
   - `existsByUsername`
   - `existsByEmail`
-- [ ] Trong `TokenBlacklistRepository`, bo sung:
+- [x] Trong `TokenBlacklistRepository`, bo sung:
   - `existsByAccessToken`
-- [ ] Trong `RefreshTokenRepository`, bo sung:
+- [x] Trong `RefreshTokenRepository`, bo sung:
   - `findByToken`
   - `deleteByUser`
 
 ### RB-04: Spring Security & JWT
-- [ ] Cau hinh `SecurityConfig`:
+- [x] Cau hinh `SecurityConfig`:
   - Tat CSRF.
   - Bat stateless session.
   - Permit `/api/auth/**`.
   - Bao ve cac API con lai.
   - Gan `JwtAuthenticationFilter` truoc `UsernamePasswordAuthenticationFilter`.
-- [ ] Tao `CustomUserDetailsService`.
-- [ ] Tao `UserPrincipal` anh xa user va role sang Spring Security.
-- [ ] Tao `JwtService`:
+- [x] Tao `CustomUserDetailsService`.
+- [x] Tao `UserPrincipal` anh xa user va role sang Spring Security.
+- [x] Tao `JwtService`:
   - generate access token.
   - extract username.
   - extract expiration.
   - validate token.
   - lay thoi gian het han token.
-- [ ] Tao `JwtAuthenticationFilter`:
+- [x] Tao `JwtAuthenticationFilter`:
   - Doc `Authorization: Bearer`.
   - Kiem tra token co nam trong blacklist khong.
   - Validate token.
   - Set authentication vao `SecurityContext`.
 
 ### RB-05: Authentication APIs
-- [ ] API dang nhap:
+- [x] API dang nhap:
   - `POST /api/auth/login`
   - Request: username, password.
   - Response: accessToken, refreshToken, tokenType, expiresIn.
   - Sai thong tin tra HTTP 401.
   - Tai khoan bi khoa tra HTTP 403.
-- [ ] API refresh token:
+- [x] API refresh token:
   - `POST /api/auth/refresh`
   - Request: refreshToken.
   - Kiem tra token ton tai, chua het han, chua revoked.
   - Cap accessToken moi.
   - Neu refresh token khong hop le tra HTTP 401.
-- [ ] API dang xuat:
+- [x] API dang xuat:
   - `POST /api/auth/logout`
   - Lay access token tu Authorization header.
   - Luu access token vao `TokenBlacklist`.
@@ -132,7 +132,7 @@ Thiet lap nen tang cho he thong Rikkei Bank RESTful API theo SRS: cau truc proje
   - success.
   - message.
   - data.
-- [ ] Tao DTO error response:
+- [x] Tao DTO error response:
   - timestamp.
   - status.
   - error.
@@ -143,7 +143,7 @@ Thiet lap nen tang cho he thong Rikkei Bank RESTful API theo SRS: cau truc proje
   - `UnauthorizedException`
   - `ForbiddenException`
   - `ResourceNotFoundException`
-- [ ] Tao `GlobalExceptionHandler` co ban:
+- [x] Tao `GlobalExceptionHandler` co ban:
   - Validation error: HTTP 400.
   - Unauthorized: HTTP 401.
   - Forbidden: HTTP 403.

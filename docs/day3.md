@@ -13,13 +13,13 @@ Hoan thien phan nghiep vu tai chinh nang cao va chat luong theo SRS: chuyen tien
 ## Cac nhiem vu
 
 ### RB-13: Transfer Money
-- [ ] Tao `TransferRequest`:
+- [x] Tao `TransferRequest`:
   - fromAccountNumber hoac fromAccountId.
   - toAccountNumber hoac targetAccountId.
   - amount.
   - description.
   - transactionPin.
-- [ ] Tao `TransferResponse`:
+- [x] Tao `TransferResponse`:
   - transactionId.
   - transactionCode.
   - fromAccountNumber.
@@ -27,11 +27,11 @@ Hoan thien phan nghiep vu tai chinh nang cao va chat luong theo SRS: chuyen tien
   - amount.
   - status.
   - createdAt.
-- [ ] API chuyen tien:
+- [x] API chuyen tien:
   - `POST /api/v1/transactions/transfer`
   - CUSTOMER thuc hien chuyen tien tu tai khoan cua minh.
   - Validate token va ownership cua source account.
-- [ ] Xu ly nghiep vu transfer trong service:
+- [x] Xu ly nghiep vu transfer trong service:
   - Kiem tra tai khoan nguon ton tai.
   - Kiem tra tai khoan dich ton tai.
   - Khong cho chuyen vao chinh tai khoan nguon.
@@ -44,7 +44,7 @@ Hoan thien phan nghiep vu tai chinh nang cao va chat luong theo SRS: chuyen tien
   - Cong tien tai khoan dich.
   - Tao `BankingTransaction` status SUCCESS.
   - Tra HTTP 200 OK hoac 201 Created.
-- [ ] Xu ly loi transfer:
+- [x] Xu ly loi transfer:
   - Khong du so du: HTTP 409 Conflict.
   - Tai khoan khong ton tai: HTTP 404.
   - Sai PIN: HTTP 403.
@@ -52,17 +52,17 @@ Hoan thien phan nghiep vu tai chinh nang cao va chat luong theo SRS: chuyen tien
   - Validation fail: HTTP 400.
 
 ### RB-14: Double-spending Protection
-- [ ] Bo sung query khoa account khi transfer:
+- [x] Bo sung query khoa account khi transfer:
   - Dung `@Lock(LockModeType.PESSIMISTIC_WRITE)` hoac optimistic locking voi `@Version`.
   - Lay source account va target account trong cung transaction.
-- [ ] Dat `@Transactional` tai method service transfer.
-- [ ] Dam bao transfer rollback khi co loi:
+- [x] Dat `@Transactional` tai method service transfer.
+- [x] Dam bao transfer rollback khi co loi:
   - Khong tao transaction SUCCESS neu tru/cong tien that bai.
   - Neu loi thi ghi status FAILED neu can theo thiet ke.
-- [ ] Viet test case chong chuyen tien vuot so du.
+- [x] Viet test case chong chuyen tien vuot so du.
 
 ### RB-15: AOP Audit Logging
-- [ ] Tao entity `AuditLog` neu chua co:
+- [x] Tao entity `AuditLog` neu chua co:
   - action.
   - actor.
   - status.
@@ -74,23 +74,23 @@ Hoan thien phan nghiep vu tai chinh nang cao va chat luong theo SRS: chuyen tien
   - KYC_REJECT.
   - ACCOUNT_LOCK.
   - ACCOUNT_UNLOCK.
-- [ ] Tao annotation `@LogAudit`.
-- [ ] Tao `FinancialAuditAspect`:
+- [x] Tao annotation `@LogAudit`.
+- [x] Tao `FinancialAuditAspect`:
   - Bat cac method co `@LogAudit`.
   - Ghi log SUCCESS sau khi method thanh cong.
   - Ghi log FAILED khi method throw exception.
   - Ghi input/output/error o muc du can thiet.
-- [ ] Dam bao AOP tach rieng khoi logic business:
+- [x] Dam bao AOP tach rieng khoi logic business:
   - Service transfer khong tu viet code audit truc tiep.
   - Aspect phu trach log.
-- [ ] Khong log thong tin nhay cam:
+- [x] Khong log thong tin nhay cam:
   - password.
   - transactionPin.
   - token.
   - refreshToken.
   - cardNumber.
   - idNumber neu can mask.
-- [ ] Tao ham sanitize/mask data truoc khi luu audit log.
+- [x] Tao ham sanitize/mask data truoc khi luu audit log.
 
 ### RB-16: Redis Token Blacklist
 - [ ] Them dependency Redis:
@@ -112,23 +112,23 @@ Hoan thien phan nghiep vu tai chinh nang cao va chat luong theo SRS: chuyen tien
   - Redis phu hop blacklist token vi truy van nhanh, co TTL tu dong, giam tai DB.
 
 ### RB-17: Change PIN & Forgot Password
-- [ ] API doi transaction PIN:
+- [x] API doi transaction PIN:
   - `PATCH /api/v1/accounts/{id}/pin`
   - CUSTOMER chi doi PIN tai khoan cua minh.
   - Request: oldPin, newPin, confirmNewPin.
   - Verify oldPin bang BCrypt.
   - Hash newPin bang BCrypt.
   - Khong luu PIN plain text.
-- [ ] API yeu cau quen mat khau:
+- [x] API yeu cau quen mat khau:
   - `POST /api/auth/forgot-password`
   - Public endpoint.
   - Nhan username/email.
   - Neu user ton tai, tao reset token hoac mock flow theo yeu cau du an.
-- [ ] API reset mat khau:
+- [x] API reset mat khau:
   - `POST /api/auth/reset-password`
   - Request: resetToken, newPassword, confirmPassword.
   - Hash password bang BCrypt.
-- [ ] Dam bao response khong tiet lo user co ton tai hay khong trong forgot-password neu can bao mat.
+- [x] Dam bao response khong tiet lo user co ton tai hay khong trong forgot-password neu can bao mat.
 
 ### RB-18: Global Exception Handler Completion
 - [ ] Hoan thien `GlobalExceptionHandler` theo SRS:
@@ -156,8 +156,8 @@ Hoan thien phan nghiep vu tai chinh nang cao va chat luong theo SRS: chuyen tien
 - [ ] Viet toi thieu 5 unit test cho service bang JUnit 5 + Mockito:
   - Login thanh cong.
   - Logout blacklist token.
-  - Transfer thanh cong.
-  - Transfer that bai vi khong du so du.
+  - [x] Transfer thanh cong.
+  - [x] Transfer that bai vi khong du so du.
   - Transfer that bai vi account khong active hoac sai ownership.
 - [ ] Viet test cho Redis blacklist service:
   - Blacklist token thanh cong.
@@ -203,7 +203,7 @@ Hoan thien phan nghiep vu tai chinh nang cao va chat luong theo SRS: chuyen tien
   - Transfer co co che chong double-spending.
   - Upload file gioi han 5MB.
   - AOP audit log cho thay doi so du.
-- [ ] Chay `./gradlew test`.
+- [x] Chay `./gradlew test`.
 - [ ] Cap nhat README hoac report:
   - Cach chay project.
   - Danh sach API.

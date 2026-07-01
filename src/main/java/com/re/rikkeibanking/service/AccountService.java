@@ -1,9 +1,11 @@
 package com.re.rikkeibanking.service;
 
 import com.re.rikkeibanking.dto.request.AccountStatusRequest;
+import com.re.rikkeibanking.dto.request.ChangePinRequest;
 import com.re.rikkeibanking.dto.request.CreateAccountRequest;
 import com.re.rikkeibanking.dto.response.AccountResponseDto;
 import com.re.rikkeibanking.dto.response.BalanceResponseDto;
+import com.re.rikkeibanking.dto.response.TransactionStatementDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -18,4 +20,8 @@ public interface AccountService {
     AccountResponseDto createAccount(CreateAccountRequest request);
 
     AccountResponseDto updateStatus(Long id, AccountStatusRequest request);
+
+    Page<TransactionStatementDto> getTransactionStatements(Long accountId, Pageable pageable, Authentication authentication);
+
+    void changePin(Long id, ChangePinRequest request, Authentication authentication);
 }

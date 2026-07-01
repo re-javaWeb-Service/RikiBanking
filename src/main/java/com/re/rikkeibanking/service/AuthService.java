@@ -1,14 +1,21 @@
 package com.re.rikkeibanking.service;
 
-
 import com.re.rikkeibanking.dto.request.LoginRequest;
+import com.re.rikkeibanking.dto.request.ForgotPasswordRequest;
+import com.re.rikkeibanking.dto.request.ResetPasswordRequest;
+import com.re.rikkeibanking.dto.request.RegisterRequest;
+import com.re.rikkeibanking.dto.response.ForgotPasswordResponse;
 import com.re.rikkeibanking.dto.response.LoginResponse;
 import com.re.rikkeibanking.entity.RefreshToken;
 import com.re.rikkeibanking.entity.TokenBlackList;
 import com.re.rikkeibanking.entity.User;
+import com.re.rikkeibanking.entity.Role;
+import com.re.rikkeibanking.entity.PasswordResetToken;
 import com.re.rikkeibanking.exception.BusinessException;
 import com.re.rikkeibanking.repository.TokenBlackListRepository;
 import com.re.rikkeibanking.repository.UserRepository;
+import com.re.rikkeibanking.repository.RoleRepository;
+import com.re.rikkeibanking.repository.PasswordResetTokenRepository;
 import com.re.rikkeibanking.security.JwtService;
 import com.re.rikkeibanking.security.UserPrincipal;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -19,11 +26,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -32,11 +41,13 @@ public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-
     private final TokenBlackListRepository tokenBlackListRepository;
     private final UserRepository userRepository;
-
+    private final RoleRepository roleRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailService emailService;
     private final RefreshTokenService refreshTokenService;
+    private final PasswordEncoder passwordEncoder;
 
     public LoginResponse login(LoginRequest loginRequest){
         Authentication authentication = authenticationManager.authenticate(
@@ -59,7 +70,31 @@ public class AuthService {
                 jwtService.getExpirationSeconds(),
                 refreshToken.getToken()
         );
-    };
+    }
+
+    @Transactional
+    public void register(RegisterRequest request) {
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new BusinessException("Username already exists", HttpStatus.BAD_REQUEST);
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new BusinessException("Email already exists", HttpStatus.BAD_REQUEST);
+        }
+
+        Role role = roleRepository.findByName("ROLE_CUSTOMER")
+                .orElseThrow(() -> new BusinessException("Role not found", HttpStatus.INTERNAL_SERVER_ERROR));
+
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setEmail(request.getEmail());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setIsActive(true);
+        user.setIsKyc(false);
+        user.setRole(role);
+
+        userRepository.save(user);
+    }
 
     @Transactional
     public void logOut(String authorizationHeader, String refreshToken){
@@ -111,6 +146,7 @@ public class AuthService {
         refreshTokenService.revokeRefreshToken(refreshToken);
         log.info("[LOGOUT] Refresh token revoked successfully");
     }
+
     public LoginResponse refreshToken(String refreshTokenValue){
         RefreshToken refreshToken = refreshTokenService.verifyRefreshToken(refreshTokenValue);
         User user = refreshToken.getUser();
@@ -127,7 +163,49 @@ public class AuthService {
         );
     }
 
+    @Transactional
+    public ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request) {
+        String resetToken = userRepository.findByUsername(request.getUsernameOrEmail())
+                .or(() -> userRepository.findByEmail(request.getUsernameOrEmail()))
+                .map(user -> {
+                    passwordResetTokenRepository.deleteByUserId(user.getId());
+                    
+                    String token = UUID.randomUUID().toString();
+                    PasswordResetToken resetTokenEntity = new PasswordResetToken(
+                            token, user, LocalDateTime.now().plusMinutes(15)
+                    );
+                    passwordResetTokenRepository.save(resetTokenEntity);
+                    
+                    emailService.sendPasswordResetEmail(user.getEmail(), token);
+                    return token;
+                })
+                .orElse(null);
 
+        return new ForgotPasswordResponse(
+                "If the account exists, a password reset email has been sent",
+                null, // Intentionally null for security in production
+                15
+        );
+    }
 
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new BusinessException("New password and confirmation password do not match", HttpStatus.BAD_REQUEST);
+        }
 
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.getResetToken())
+                .orElseThrow(() -> new BusinessException("Invalid or expired reset token", HttpStatus.UNAUTHORIZED));
+
+        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            passwordResetTokenRepository.delete(resetToken);
+            throw new BusinessException("Invalid or expired reset token", HttpStatus.UNAUTHORIZED);
+        }
+
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        
+        passwordResetTokenRepository.delete(resetToken);
+    }
 }

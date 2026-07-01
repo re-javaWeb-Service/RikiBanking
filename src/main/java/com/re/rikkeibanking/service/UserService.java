@@ -14,4 +14,6 @@ public interface UserService {
     UserResponseDto updateUser(Long id, UserUpdateRequest request);
 
     UserResponseDto updateStatus(Long id, UserStatusRequest request);
+
+    UserResponseDto getCurrentUserProfile(org.springframework.security.core.Authentication authentication);
 }

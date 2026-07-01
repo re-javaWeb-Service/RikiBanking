@@ -35,14 +35,22 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
 //                        /api/auth/login   -> public, vì chưa đăng nhập vẫn phải login được
-                        .requestMatchers("/api/auth/login","/api/auth/refresh").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/refresh", "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
 //                        /api/auth/refresh -> public, vì accessToken có thể hết hạn, dùng refreshToken lấy token mới
                         .requestMatchers("/api/auth/logout").authenticated()
+                                .requestMatchers(HttpMethod.PATCH, "/api/v1/users/*/status").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/users/me").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF", "ROLE_CUSTOMER")
                                 .requestMatchers("/api/v1/users/**").hasAnyAuthority("ROLE_ADMIN","ROLE_STAFF")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/audit-logs/**").hasAnyAuthority("ROLE_ADMIN","ROLE_STAFF")
                                 .requestMatchers("/api/v1/kyc/upload").hasAuthority("ROLE_CUSTOMER")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/kyc/me").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF", "ROLE_CUSTOMER")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/kyc/**").hasAnyAuthority("ROLE_ADMIN","ROLE_STAFF")
+                                .requestMatchers(HttpMethod.PATCH, "/api/v1/kyc/**").hasAnyAuthority("ROLE_ADMIN","ROLE_STAFF")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/accounts/**").hasAnyAuthority("ROLE_ADMIN","ROLE_STAFF", "ROLE_CUSTOMER")
                                 .requestMatchers(HttpMethod.POST, "/api/v1/accounts").hasAnyAuthority("ROLE_ADMIN","ROLE_STAFF")
+                                .requestMatchers(HttpMethod.PATCH, "/api/v1/accounts/*/pin").hasAuthority("ROLE_CUSTOMER")
                                 .requestMatchers(HttpMethod.PATCH, "/api/v1/accounts/**").hasAnyAuthority("ROLE_ADMIN","ROLE_STAFF")
+                                .requestMatchers(HttpMethod.POST, "/api/v1/transactions/transfer").hasAuthority("ROLE_CUSTOMER")
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
